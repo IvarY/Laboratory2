@@ -57,10 +57,39 @@ public class Breakout extends GraphicsProgram {
 /** Number of turns */
 	private static final int NTURNS = 3;
 
+	/** Time between frames in ms*/
+	private static final int frameTime = 10;
+
+	private boolean isGameOver=false;
+
 /* Method: run() */
 /** Runs the Breakout program. */
 	public void run() {
 		/* You fill this in, along with any subsidiary methods */
+		gameStart();
+
+	}
+
+	/**	Is called when program initialises */
+	public void init(){
+		this.setSize(APPLICATION_WIDTH, APPLICATION_HEIGHT);
+	}
+
+	/**
+	 * Is called once each time game start
+	 */
+	public void gameStart(){
+		while(!isGameOver){
+			gameUpdate();
+		}
+	}
+
+	/**
+	 * Main game cycle
+	 * Called once each frame
+	 */
+	public void gameUpdate(){
+
 	}
 
 }
