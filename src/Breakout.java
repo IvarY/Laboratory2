@@ -61,7 +61,6 @@ public class Breakout extends GraphicsProgram {
 /** Runs the Breakout program. */
 	public void run() {
 		/* You fill this in, along with any subsidiary methods */
-		add(new GOval(100, 200), 200, 100);
 	}
 
 }
