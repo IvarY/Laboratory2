@@ -66,8 +66,8 @@ public class Breakout extends GraphicsProgram {
 /** Runs the Breakout program. */
 	public void run() {
 		/* You fill this in, along with any subsidiary methods */
+		println("yusjfw");
 		gameStart();
-
 	}
 
 	/**	Is called when program initialises */
