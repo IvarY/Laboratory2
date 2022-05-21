@@ -60,13 +60,24 @@ public class Breakout extends GraphicsProgram {
 	/** Time between frames in ms*/
 	private static final int frameTime = 10;
 
+	private int speed = 0;
+
+	GPoint click;
+
+	private GRect playAgainBottom;
+	private GRect endGameBottom;
+
+	private int livesLeft = 0;
+	private int blocksLeft = 1;
+
+
 	private boolean isGameOver=false;
 
 /* Method: run() */
 /** Runs the Breakout program. */
 	public void run() {
 		/* You fill this in, along with any subsidiary methods */
-		println("yusjfw");
+		addStartMenu();
 		gameStart();
 	}
 
@@ -74,6 +85,7 @@ public class Breakout extends GraphicsProgram {
 	public void init(){
 		this.setSize(APPLICATION_WIDTH, APPLICATION_HEIGHT);
 	}
+
 
 	/**
 	 * Is called once each time game start
@@ -90,6 +102,139 @@ public class Breakout extends GraphicsProgram {
 	 */
 	public void gameUpdate(){
 
+	}
+
+	/**adds start menu*/
+	private void addStartMenu() {
+		addKeyListeners();
+
+		GLabel hello = new GLabel("Hello! This a Breakout game.", 90,50);
+		hello.setFont("Calibre-16");
+		hello.setColor(Color.BLACK);
+		add(hello);
+
+		GLabel hello1 = new GLabel("Press on your keyboard the difficulty level!",35,80);
+		hello1.setFont("Calibre-16");
+		hello1.setColor(Color.BLACK);
+		add(hello1);
+
+		GRect rect = new GRect(150,50);
+		rect.setColor(Color.green);
+		rect.setFilled(true);
+		add(rect,125,150);
+
+		GRect rect2 = new GRect(150,50);
+		rect2.setColor(Color.yellow);
+		rect2.setFilled(true);
+		add(rect2,125,250);
+
+		GRect rect3 = new GRect(150,50);
+		rect3.setColor(Color.red);
+		rect3.setFilled(true);
+		add(rect3,125,350);
+
+		GLabel level1 = new GLabel("LEVEL 1",155,185);
+		level1.setFont("Calibre-24");
+		level1.setColor(Color.BLACK);
+		add(level1);
+
+		GLabel level2 = new GLabel("LEVEL 2",155,285);
+		level2.setFont("Calibre-24");
+		level2.setColor(Color.BLACK);
+		add(level2);
+
+		GLabel level3 = new GLabel("LEVEL 3",155,385);
+		level3.setFont("Calibre-24");
+		level3.setColor(Color.BLACK);
+		add(level3);
+
+
+	}
+
+	/**adds end menu*/
+	private void addPlayAgainMenu() {
+
+		playAgainBottom = new GRect(200,50);
+		playAgainBottom.setColor(Color.CYAN);
+		playAgainBottom.setFilled(true);
+		add(playAgainBottom,100, 200);
+
+		endGameBottom = new GRect(200,50);
+		endGameBottom.setFilled(true);
+		endGameBottom.setColor(Color.red);
+		add(endGameBottom, 100,315);
+
+		GLabel play = new GLabel("Play Again",140,235);
+		play.setFont("Calibre-24");
+		play.setColor(Color.BLACK);
+		add(play);
+
+		GLabel end = new GLabel("End Game",145,350);
+		end.setFont("Calibre-24");
+		end.setColor(Color.BLACK);
+		add(end);
+
+	}
+
+	/**If we paly again returns all veriables to the start position*/
+	private void restart(){
+		removeAll();
+		livesLeft=3;
+		blocksLeft=15;
+		speed=0;
+	}
+
+	public void mousePressed(MouseEvent e) {
+		if (livesLeft == 0 || blocksLeft == 0) {
+			click = new GPoint(e.getPoint());
+			GObject ag = getElementAt(click);
+			if (ag.equals(playAgainBottom)) {
+				restart();
+			}
+			if (ag == endGameBottom) {
+				removeAll();
+				livesLeft = 3;
+				blocksLeft = 15;
+				speed = 0;
+
+			}
+		}
+	}
+
+	private void playOrNo(MouseEvent j){
+		GObject ag = getElementAt(j.getX(), j.getY());
+		if(ag.equals(playAgainBottom)){
+			restart();
+		}
+		if(ag==endGameBottom){
+			removeAll();
+			livesLeft=3;
+			blocksLeft=15;
+			speed=0;
+			println(2);
+
+		}
+	}
+
+	/**key event with the help of which we decide the speed of the ball*/
+	public void keyPressed(KeyEvent e) {
+		if (e.getKeyChar() == '1' && speed == 0) {
+			removeAll();
+			addMouseListeners();
+			speed = 20;
+		}
+
+		if (e.getKeyChar() == '2' && speed == 0) {
+			removeAll();
+			addMouseListeners();
+			speed = 12;
+		}
+
+		if (e.getKeyChar() == '3' && speed == 0) {
+			removeAll();
+			addMouseListeners();
+			speed = 6;
+		}
 	}
 
 
