@@ -66,6 +66,8 @@ public class Breakout extends GraphicsProgram {
 	/** Currently chosen game level*/
 	private int level;
 
+	private GRect paddle;
+
 /* Method: run() */
 /** Runs the Breakout program. */
 	public void run() {
@@ -89,6 +91,7 @@ public class Breakout extends GraphicsProgram {
 	 * Setups everything when level is started*/
 	public void gameStart(int level){
 		removeAll();
+		addPaddle();
 		this.level=level;
 		isGameOver=false;
 		generateBricks();
@@ -135,7 +138,26 @@ public class Breakout extends GraphicsProgram {
 	}
 	/** Checks collision for one ball */
 	private void checkCollision(){
+	}
 
+	public void mouseMoved(MouseEvent e){
+		movePaddle(e);
+	}
+
+	private void movePaddle(MouseEvent e){
+		if(paddle!=null) {
+			if (e.getX() <= WIDTH - paddle.getWidth()/2 && e.getX()>=paddle.getWidth()/2)
+				paddle.move(e.getX() - paddle.getX()-paddle.getWidth()/2, 0);
+		}
+	}
+
+	private void addPaddle(){
+		paddle = new GRect(PADDLE_WIDTH, PADDLE_HEIGHT);
+		paddle.setFilled(true);
+		paddle.setColor(Color.BLACK);
+		add(paddle, WIDTH/2-PADDLE_WIDTH/2, HEIGHT-PADDLE_Y_OFFSET-PADDLE_HEIGHT);
+	}
+	private void addBonus(){
 	}
 
 }
