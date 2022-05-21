@@ -60,38 +60,82 @@ public class Breakout extends GraphicsProgram {
 	/** Time between frames in ms*/
 	private static final int frameTime = 10;
 
-	private boolean isGameOver=false;
+	private boolean isGameOver=true;
+	/** Button manager to operate buttons*/
+	private ButtonManager buttonManager;
+	/** Currently chosen game level*/
+	private int level;
 
 /* Method: run() */
 /** Runs the Breakout program. */
 	public void run() {
-		/* You fill this in, along with any subsidiary methods */
-		println("yusjfw");
-		gameStart();
+		displayMainMenu();
+		while(true){
+			if(isGameOver)
+				continue;
+			gameUpdate();
+		}
 	}
 
 	/**	Is called when program initialises */
 	public void init(){
 		this.setSize(APPLICATION_WIDTH, APPLICATION_HEIGHT);
+		//this.getGCanvas().setBackground(Color.lightGray);
+		buttonManager = new ButtonManager(this);
+		addMouseListeners();
 	}
 
-	/**
-	 * Is called once each time game start
-	 */
-	public void gameStart(){
-		while(!isGameOver){
-			gameUpdate();
-		}
+	/** Is called once each time game is started
+	 * Setups everything when level is started*/
+	public void gameStart(int level){
+		removeAll();
+		this.level=level;
+		isGameOver=false;
+		generateBricks();
 	}
 
-	/**
-	 * Main game cycle
-	 * Called once each frame
-	 */
+	/**Main game cycle
+	 * Called once each frame */
 	public void gameUpdate(){
 
 	}
+	/** Draws level choosing menu*/
+	private void displayMainMenu(){
+		for(int i=1; i<=3; i++) {
+			add(new GButton(WIDTH/2, HEIGHT/6, i, "Level "+i, buttonManager), WIDTH/4, HEIGHT*(1+3*(i-1))/12);
+		}
+	}
+	/** Generates bricks and adds them to the canvas */
+	private void generateBricks(){
+		for(int i=0; i<NBRICK_ROWS; i++){
+			for(int j=0; j<NBRICKS_PER_ROW; j++){
+				GRect brick = new GRect(BRICK_WIDTH, BRICK_HEIGHT);
+				brick.setFilled(true);
 
+				Color color;
+				if(i<NBRICKS_PER_ROW/5)
+					color=Color.red;
+				else if (i<NBRICKS_PER_ROW*2/5)
+					color=Color.orange;
+				else if (i<NBRICKS_PER_ROW*3/5)
+					color=Color.yellow;
+				else if (i<NBRICKS_PER_ROW*4/5)
+					color=Color.green;
+				else color=Color.cyan;
 
+				brick.setFillColor(color);
+				brick.setColor(color);
+				add(brick, j*(BRICK_WIDTH+BRICK_SEP), BRICK_Y_OFFSET+i*(BRICK_HEIGHT+BRICK_SEP));
+			}
+		}
+	}
+	/** Checks collisions for all balls on field */
+	private void checkCollisions(){
+
+	}
+	/** Checks collision for one ball */
+	private void checkCollision(){
+
+	}
 
 }
