@@ -98,9 +98,14 @@ public class Breakout extends GraphicsProgram {
 	/**all sounds in game*/
 	private SoundClip sound;
 
+	/**counts points after brick is broken*/
+	private int points;
+
+	private GLabel score;
 /* Method: run() */
 /** Runs the Breakout program. */
 	public void run() {
+
 		displayMainMenu();
 		while(true){
 			print("");
@@ -125,14 +130,17 @@ public class Breakout extends GraphicsProgram {
 	 * Setups everything when level is started*/
 	public void gameStart(int level){
 		removeAll();
+		points = 0;
 		addPaddle();
+		score = new GLabel("score: "+points);
+		add(score, WIDTH-score.getWidth()-25, score.getHeight()+5);
 		livesLeft=NTURNS;
 		this.level=level;
 		isGameOver=false;
 		generateGameField();
 		currentBallCount=0;
 		addBall();
-		addBall();
+
 	}
 	/** Is called when player loses */
 	private void gameOver() {
@@ -434,6 +442,7 @@ public class Breakout extends GraphicsProgram {
 
 		if(ball.getY()>=HEIGHT-ball.getHeight()) {
 			//TODO Xpoint
+
 			remove(ball);
 			sound = new SoundClip("/Users/matvejzasadko/Downloads/Laboratory/Sounds/Mistake.wav");
 			sound.setVolume(1);
@@ -446,6 +455,8 @@ public class Breakout extends GraphicsProgram {
 			if(currentBallCount>0)
 				return;
 			livesLeft--;
+			XPoint point = new XPoint(20,20);
+			add(point, (NTURNS-livesLeft)*21+10,10);
 			if (livesLeft == 0){
 				gameOver();
 				return;
@@ -500,7 +511,17 @@ public class Breakout extends GraphicsProgram {
 	/** Removes brick and updates score */
 	private void breakBrick(GObject brick){
 		brickCount--;
-
+		if(brick.getColor()==Color.red)
+		    points+=5;
+		if(brick.getColor()==Color.orange)
+			points+=4;
+		if(brick.getColor()==Color.yellow)
+			points+=3;
+		if(brick.getColor()==Color.green)
+			points+=2;
+		if(brick.getColor()==Color.cyan)
+			points++;
+        score.setLabel("score: "+ points);
 		sound = new SoundClip("/Users/matvejzasadko/Downloads/Laboratory/Sounds/Bounce.wav");
 		sound.setVolume(1);
 		sound.play();
