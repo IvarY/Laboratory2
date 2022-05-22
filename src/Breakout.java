@@ -9,11 +9,9 @@
 
 import acm.graphics.*;
 import acm.program.*;
-import acm.util.*;
+import acm.util.RandomGenerator;
 
-import java.applet.*;
 import java.awt.*;
-import java.awt.event.*;
 
 public class Breakout extends GraphicsProgram {
 
@@ -58,22 +56,33 @@ public class Breakout extends GraphicsProgram {
 	private static final int NTURNS = 3;
 
 	/** Time between frames in ms*/
-	private static final int frameTime = 10;
+	private static final int frameTime = 3;
+	/** Coefficient dependent on frameTime to use in formulas */
+	private static final double frameTimeCoefficient = frameTime/40.0;
 
 	private boolean isGameOver=true;
 	/** Button manager to operate buttons*/
 	private ButtonManager buttonManager;
 	/** Currently chosen game level*/
 	private int level;
+	private Ball[] ballCollection;
+	/** maximum count of balls on canvas */
+	private int maxBallCount=5;
+
+	private RandomGenerator randomGenerator;
+
+	private int brickCount;
 
 /* Method: run() */
 /** Runs the Breakout program. */
 	public void run() {
 		displayMainMenu();
 		while(true){
+			print("");
 			if(isGameOver)
 				continue;
 			gameUpdate();
+			pause(frameTime);
 		}
 	}
 
@@ -82,6 +91,8 @@ public class Breakout extends GraphicsProgram {
 		this.setSize(APPLICATION_WIDTH, APPLICATION_HEIGHT);
 		//this.getGCanvas().setBackground(Color.lightGray);
 		buttonManager = new ButtonManager(this);
+		randomGenerator = new RandomGenerator();
+		ballCollection = new Ball[maxBallCount];
 		addMouseListeners();
 	}
 
@@ -92,13 +103,19 @@ public class Breakout extends GraphicsProgram {
 		this.level=level;
 		isGameOver=false;
 		generateBricks();
+		brickCount=NBRICK_ROWS*NBRICKS_PER_ROW;
+		addBall();
+		//addBall();
 	}
 
 	/**Main game cycle
 	 * Called once each frame */
 	public void gameUpdate(){
-
+		//println("upd");
+		moveAllBalls();
+		checkAllCollisions();
 	}
+
 	/** Draws level choosing menu*/
 	private void displayMainMenu(){
 		for(int i=1; i<=3; i++) {
@@ -130,12 +147,101 @@ public class Breakout extends GraphicsProgram {
 		}
 	}
 	/** Checks collisions for all balls on field */
-	private void checkCollisions(){
-
+	private void checkAllCollisions(){
+		for(int i=0; i<maxBallCount; i++) {
+			if(ballCollection[i]!=null)
+				checkCollisions(ballCollection[i]);
+		}
 	}
-	/** Checks collision for one ball */
-	private void checkCollision(){
-
+	/** Checks and processes collision for one ball */
+	private void checkCollisions(Ball ball){
+		GObject collision, brick1 = null, brick2 = null;
+		int dx=0, dy=0;
+		for (int i=0;i<2;i++)
+			for(int j=0; j<2; j++) {
+				collision = getElementAt(ball.getX()+i*ball.getWidth(), ball.getY()+j*ball.getHeight());
+				if (collision != null)
+					if (isBrick(collision)) {
+						//breakBrick(collision);
+						if(brick1==null)
+							brick1=collision;
+//						else if(brick2==null)
+//							brick2=collision;
+						if(i==0) {
+							dx++;
+						}
+						else {
+							dx--;
+						}
+						if(j==0){
+							dy++;
+						}
+						else{
+							dy--;
+						}
+					}
+			}
+		if(brick1!=null)
+			breakBrick(brick1);
+		else if(brick2!=null)
+			breakBrick(brick2);
+		if(dx!=0)
+			ball.setDx(Math.abs(ball.getDx())*dx/Math.abs(dx));
+		if(dy!=0)
+			ball.setDy(Math.abs(ball.getDy())*dy/Math.abs(dy));
 	}
-
+	/** Moves all balls on the field */
+	private void moveAllBalls(){
+		for(int i=0; i<maxBallCount; i++) {
+			if(ballCollection[i]!=null) {
+				moveBall(ballCollection[i]);
+			}
+		}
+	}
+	/** Moves one ball */
+	private void moveBall(Ball ball){
+		ball.move(ball.getDx()*ball.getSpeed()*frameTimeCoefficient, ball.getDy()*ball.getSpeed()*frameTimeCoefficient);
+		if(ball.getX()>=WIDTH-ball.getWidth()){
+			ball.setDx(-Math.abs(ball.getDx()));
+			//ball.move(,0);
+		}
+		if(ball.getX()<=0){
+			ball.setDx(Math.abs(ball.getDx()));
+			//ball.move(,0);
+		}
+		if(ball.getY()<=0){
+			ball.setDy(Math.abs(ball.getDy()));
+			//ball.move(,0);
+		}
+		if(ball.getY()>=HEIGHT-ball.getHeight()){
+			ball.setDy(-ball.getDy());
+			ball.setDx(randomGenerator.nextDouble(1,2)*ball.getDx()/Math.abs(ball.getDx()));
+			//ball.move(,0);
+		}
+	}
+	/** Adds ball if ball count on canvas is not max */
+	private void addBall(){
+		for(int i=0; i<maxBallCount; i++) {
+			if(ballCollection[i]==null) {
+				ballCollection[i] = new Ball(BALL_RADIUS * 2, BALL_RADIUS * 2,
+						randomGenerator.nextDouble(1,2)*(randomGenerator.nextBoolean()?1:-1), -2, 10);
+				add(ballCollection[i], WIDTH/2, HEIGHT/2);
+				break;
+			}
+		}
+	}
+	/** Removes brick and updates score */
+	private void breakBrick(GObject brick){
+		brickCount--;
+		remove(brick);
+		//TODO Check if brick count = 0
+	}
+	/** Returns true if GObject is brick */
+	private boolean isBrick(GObject obj){
+		for(int i=0; i<maxBallCount; i++) {
+			if(ballCollection[i]==obj)
+				return false;
+		}
+		return true;
+	}
 }
