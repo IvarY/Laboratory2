@@ -69,9 +69,14 @@ public class Breakout extends GraphicsProgram {
 	private Ball[] ballCollection;
 	/** maximum count of balls on canvas */
 	private int maxBallCount=5;
+	/** current count of balls on canvas */
+	private int currentBallCount;
 
 	private RandomGenerator randomGenerator;
 
+	/**
+	 * Count of bricks on current level
+	 */
 	private int brickCount;
 
 	private int currentBrickCount;
@@ -79,6 +84,16 @@ public class Breakout extends GraphicsProgram {
 	private int livesLeft;
 
 	private GRect paddle;
+	private GRect bonus1, bonus2;
+	/**
+	 * Width and height of bonuses
+	 */
+	private double bonusWidth=10, bonusHeight=10;
+
+	/**
+	 * Coefficient depending on which ball will deviate whet collide with different zones of paddle
+	 */
+	private double paddleCollisionDeviation = 0.0015;
 
 /* Method: run() */
 /** Runs the Breakout program. */
@@ -111,21 +126,24 @@ public class Breakout extends GraphicsProgram {
 		livesLeft=NTURNS;
 		this.level=level;
 		isGameOver=false;
-		generateBricks();
-		brickCount=NBRICK_ROWS*NBRICKS_PER_ROW;
+		generateGameField();
+		currentBallCount=0;
 		addBall();
-		//addBall();
+		addBall();
 	}
-
+	/** Is called when player loses */
 	private void gameOver() {
+		removeAllBalls();
+		removeAllBonuses();
 		removeAll();
 		displayEndMenu();
 	}
-
+	/** Is called when player wins */
 	private void gameWin(){
-		if(brickCount==0){
-			displayEndMenu();
-		}
+		removeAllBalls();
+		removeAllBonuses();
+		removeAll();
+		displayEndMenu();
 	}
 
 	/**returns to menu to choose an another level*/
@@ -159,14 +177,28 @@ public class Breakout extends GraphicsProgram {
 	private void displayEndMenu(){
 		add(new GButton(WIDTH/2, HEIGHT/6, 4, "Play Again", buttonManager), WIDTH/4, HEIGHT/5);
 		add(new GButton(WIDTH/2, HEIGHT/6, 5, "Go to Menu", buttonManager), WIDTH/4, HEIGHT/2);
-		add(new GButton(WIDTH/2, HEIGHT/6, 6, "Exit", buttonManager), WIDTH/4, HEIGHT/);
+		add(new GButton(WIDTH/2, HEIGHT/6, 6, "Exit", buttonManager), WIDTH/4, HEIGHT/1.5);
 	}
 	/** Generates bricks and adds them to the canvas */
 	private void generateBricks(){
+		brickCount = 0;
 		for(int i=0; i<NBRICK_ROWS; i++){
 			for(int j=0; j<NBRICKS_PER_ROW; j++){
 				GRect brick = new GRect(BRICK_WIDTH, BRICK_HEIGHT);
 				brick.setFilled(true);
+
+				switch (level){
+					case 1:
+						break;
+					case 2:
+						if(Math.abs(i-j)>=5)
+							continue;
+						break;
+					case 3:
+						if(Math.abs(i-j)<=5)
+							continue;
+						break;
+				}
 
 				Color color;
 				if(i<NBRICKS_PER_ROW/5)
@@ -182,10 +214,43 @@ public class Breakout extends GraphicsProgram {
 				brick.setFillColor(color);
 				brick.setColor(color);
 				add(brick, j*(BRICK_WIDTH+BRICK_SEP), BRICK_Y_OFFSET+i*(BRICK_HEIGHT+BRICK_SEP));
+				brickCount++;
 			}
 		}
 	}
 
+	/**
+	 * Generates game level
+	 */
+	private void generateGameField(){
+		generateBricks();
+		generateBonuses();
+	}
+
+	/**
+	 * Generates bonuses depending on chosen level
+	 */
+	private void generateBonuses(){
+		switch (level){
+			case 1:
+				break;
+			case 2:
+				addBonusAt(BRICK_WIDTH/2.0, BRICK_Y_OFFSET+(NBRICK_ROWS-0.5)*(BRICK_HEIGHT+BRICK_SEP), Color.blue);
+				addBonusAt(BRICK_WIDTH*(NBRICKS_PER_ROW+0.5), BRICK_Y_OFFSET+BRICK_HEIGHT/2, Color.blue);
+				break;
+			case 3:
+				addBonusAt(WIDTH/2, BRICK_Y_OFFSET+(NBRICK_ROWS/2)*(BRICK_HEIGHT+BRICK_SEP), Color.red);
+				break;
+		}
+	}
+
+	/**
+	 * Removes all bonus pointers
+	 */
+	private void removeAllBonuses(){
+		bonus1=null;
+		bonus2=null;
+	}
 
 	public void mouseMoved(MouseEvent e){
 		movePaddle(e);
@@ -195,6 +260,11 @@ public class Breakout extends GraphicsProgram {
 		if(paddle!=null) {
 			if (e.getX() <= WIDTH - paddle.getWidth()/2 && e.getX()>=paddle.getWidth()/2)
 				paddle.move(e.getX() - paddle.getX()-paddle.getWidth()/2, 0);
+
+			if(e.getX()<=paddle.getWidth()/2)
+				paddle.move(-paddle.getX(), 0);
+			if(e.getX()>=WIDTH-paddle.getWidth()/2)
+				paddle.move(-paddle.getX()+WIDTH-paddle.getWidth(), 0);
 		}
 	}
 
@@ -204,9 +274,27 @@ public class Breakout extends GraphicsProgram {
 		paddle.setColor(Color.BLACK);
 		add(paddle, WIDTH/2-PADDLE_WIDTH/2, HEIGHT-PADDLE_Y_OFFSET-PADDLE_HEIGHT);
 	}
-	private void addBonus(){
 
+	/** Adds bonus of certain type in certain coordinates
+	 * @param x
+	 * @param y
+	 * @param color bonus type
+	 */
+	private void addBonusAt(double x, double y, Color color){
+		GRect bonus = new GRect(bonusWidth, bonusHeight);
+		bonus.setColor(color);
+		bonus.setFilled(true);
+		bonus.setFillColor(color);
+		if(bonus1==null) {
+			bonus1 = bonus;
+			add(bonus1, x, y);
+		}
+		else if(bonus2==null) {
+			bonus2 = bonus;
+			add(bonus2, x, y);
+		}
 	}
+	/** Checks collisions for all balls */
 	private void checkAllCollisions(){
 		for(int i=0; i<maxBallCount; i++) {
 			if(ballCollection[i]!=null)
@@ -220,26 +308,31 @@ public class Breakout extends GraphicsProgram {
 		for (int i=0;i<2;i++)
 			for(int j=0; j<2; j++) {
 				collision = getElementAt(ball.getX()+i*ball.getWidth(), ball.getY()+j*ball.getHeight());
-				if (collision != null)
-					if (isBrick(collision)) {
+				if (collision != null) {
+					if(collision==paddle){
+						collideWithPaddle(ball);
+					}
+					else if(collision==bonus1||collision==bonus2){
+						useBonus(collision);
+					}
+					else if (isBrick(collision)) {
 						//breakBrick(collision);
-						if(brick1==null)
-							brick1=collision;
+						if (brick1 == null)
+							brick1 = collision;
 //						else if(brick2==null)
 //							brick2=collision;
-						if(i==0) {
+						if (i == 0) {
 							dx++;
-						}
-						else {
+						} else {
 							dx--;
 						}
-						if(j==0){
+						if (j == 0) {
 							dy++;
-						}
-						else{
+						} else {
 							dy--;
 						}
 					}
+				}
 			}
 		if(brick1!=null)
 			breakBrick(brick1);
@@ -249,6 +342,29 @@ public class Breakout extends GraphicsProgram {
 			ball.setDx(Math.abs(ball.getDx())*dx/Math.abs(dx));
 		if(dy!=0)
 			ball.setDy(Math.abs(ball.getDy())*dy/Math.abs(dy));
+	}
+
+	/** Consumes bonus
+	 * @param bonus
+	 */
+	private void useBonus(GObject bonus){
+		remove(bonus);
+		if(bonus.getColor()==Color.blue){
+			addBallAt(bonus.getX(), bonus.getY());
+			addBallAt(bonus.getX(), bonus.getY());
+		}
+		else if(bonus.getColor()==Color.red){
+			addBallAt(bonus.getX(), bonus.getY());
+			addBallAt(bonus.getX(), bonus.getY());
+			addBallAt(bonus.getX(), bonus.getY());
+			addBallAt(bonus.getX(), bonus.getY());
+			paddle.scale(1.5, 1);
+		}
+		if(bonus==bonus1)
+			bonus1=null;
+		else
+			bonus2=null;
+
 	}
 	/** Moves all balls on the field */
 	private void moveAllBalls(){
@@ -276,7 +392,12 @@ public class Breakout extends GraphicsProgram {
 
 		if(ball.getY()>=HEIGHT-ball.getHeight()) {
 			remove(ball);
-			//TODO
+			for(int i=0; i<maxBallCount; i++)
+				if(ballCollection[i]==ball)
+					ballCollection[i]=null;
+			currentBallCount--;
+			if(currentBallCount>0)
+				return;
 			livesLeft--;
 			if (livesLeft == 0){
 				gameOver();
@@ -291,13 +412,26 @@ public class Breakout extends GraphicsProgram {
 //			//ball.move(,0);
 //		}
 	}
-	/** Adds ball if ball count on canvas is not max */
+	/** Adds ball in the center of the field if ball count on canvas is not max */
 	private void addBall(){
 		for(int i=0; i<maxBallCount; i++) {
 			if(ballCollection[i]==null) {
 				ballCollection[i] = new Ball(BALL_RADIUS * 2, BALL_RADIUS * 2,
 						randomGenerator.nextDouble(1,2)*(randomGenerator.nextBoolean()?1:-1), -2, 10);
 				add(ballCollection[i], WIDTH/2, HEIGHT/2);
+				currentBallCount++;
+				break;
+			}
+		}
+	}
+	/** Adds ball at certain coordinates */
+	private void addBallAt(double x, double y){
+		for(int i=0; i<maxBallCount; i++) {
+			if(ballCollection[i]==null) {
+				ballCollection[i] = new Ball(BALL_RADIUS * 2, BALL_RADIUS * 2,
+						randomGenerator.nextDouble(1,2)*(randomGenerator.nextBoolean()?1:-1), -2, 10);
+				add(ballCollection[i], x, y);
+				currentBallCount++;
 				break;
 			}
 		}
@@ -306,15 +440,20 @@ public class Breakout extends GraphicsProgram {
 	private void collideWithPaddle(Ball ball){
 		//TODO sound
 		ball.setDy(-Math.abs(ball.getDy()));
+		//TODO tune reflecting with different parts of paddle
+		double zoneCoefficient = ball.getX()+ball.getWidth()/2.0-paddle.getX()-paddle.getWidth()/2;
+		double dx= ball.getDx()/Math.pow(Math.abs(zoneCoefficient),0.2)+(paddleCollisionDeviation)*(1+zoneCoefficient*Math.abs(zoneCoefficient)/3);
+//		if(Math.abs(dx)>=2)
+//			dx=2*dx/Math.abs(dx);
+		ball.setDx(dx);
 	}
 	/** Removes brick and updates score */
 	private void breakBrick(GObject brick){
 		brickCount--;
 		remove(brick);
-		if(brikCount==0){
+		if(brickCount==0){
 			gameWin();
 		}
-		//TODO Check if brick count = 0
 	}
 	/** Returns true if GObject is brick */
 	private boolean isBrick(GObject obj){
@@ -325,5 +464,14 @@ public class Breakout extends GraphicsProgram {
 		if(obj==paddle)
 			return false;
 		return true;
+	}
+	/** Removes all balls from field and collection */
+	private void removeAllBalls(){
+		for(int i=0;i<maxBallCount;i++){
+			if(ballCollection[i]!=null) {
+				remove(ballCollection[i]);
+				ballCollection[i] = null;
+			}
+		}
 	}
 }
