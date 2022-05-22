@@ -17,9 +17,19 @@ public class ButtonManager {
                 break;
             case 2:
                 //TODO Load level2
+                breakout.gameStart(2);
                 break;
             case 3:
                 //TODO Load level3
+                breakout.gameStart(3);
+                break;
+            case 4:
+                //TODO Load level3
+                breakout.gameRestart();
+                break;
+            case 5:
+                //TODO Load level3
+                breakout.newGame();
                 break;
             default:
         }

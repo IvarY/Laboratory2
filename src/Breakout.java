@@ -74,6 +74,10 @@ public class Breakout extends GraphicsProgram {
 
 	private int brickCount;
 
+	private int currentBrickCount;
+
+	private int livesLeft;
+
 	private GRect paddle;
 
 /* Method: run() */
@@ -104,6 +108,7 @@ public class Breakout extends GraphicsProgram {
 	public void gameStart(int level){
 		removeAll();
 		addPaddle();
+		livesLeft=NTURNS;
 		this.level=level;
 		isGameOver=false;
 		generateBricks();
@@ -111,6 +116,30 @@ public class Breakout extends GraphicsProgram {
 		addBall();
 		//addBall();
 	}
+
+	private void gameOver() {
+		removeAll();
+		displayEndMenu();
+	}
+
+	private void gameWin(){
+		if(brickCount==0){
+			displayEndMenu();
+		}
+	}
+
+	/**returns to menu to choose an another level*/
+	public void newGame(){
+		removeAll();
+		displayMainMenu();
+	}
+
+	/** restarts the same level*/
+	public void gameRestart(){
+		removeAll();
+		gameStart(level);
+	}
+
 
 	/**Main game cycle
 	 * Called once each frame */
@@ -124,6 +153,13 @@ public class Breakout extends GraphicsProgram {
 		for(int i=1; i<=3; i++) {
 			add(new GButton(WIDTH/2, HEIGHT/6, i, "Level "+i, buttonManager), WIDTH/4, HEIGHT*(1+3*(i-1))/12);
 		}
+	}
+
+	/**Displays end menu after gane over*/
+	private void displayEndMenu(){
+		add(new GButton(WIDTH/2, HEIGHT/6, 4, "Play Again", buttonManager), WIDTH/4, HEIGHT/5);
+		add(new GButton(WIDTH/2, HEIGHT/6, 5, "Go to Menu", buttonManager), WIDTH/4, HEIGHT/2);
+		add(new GButton(WIDTH/2, HEIGHT/6, 6, "Exit", buttonManager), WIDTH/4, HEIGHT/);
 	}
 	/** Generates bricks and adds them to the canvas */
 	private void generateBricks(){
@@ -237,11 +273,23 @@ public class Breakout extends GraphicsProgram {
 			ball.setDy(Math.abs(ball.getDy()));
 			//ball.move(,0);
 		}
-		if(ball.getY()>=HEIGHT-ball.getHeight()){
-			ball.setDy(-ball.getDy());
-			ball.setDx(randomGenerator.nextDouble(1,2)*ball.getDx()/Math.abs(ball.getDx()));
-			//ball.move(,0);
+
+		if(ball.getY()>=HEIGHT-ball.getHeight()) {
+			remove(ball);
+			//TODO
+			livesLeft--;
+			if (livesLeft == 0){
+				gameOver();
+				return;
+		    }
+			addBall();
 		}
+
+//		if(ball.getY()>=HEIGHT-ball.getHeight()){
+//			ball.setDy(-ball.getDy());
+//			ball.setDx(randomGenerator.nextDouble(1,2)*ball.getDx()/Math.abs(ball.getDx()));
+//			//ball.move(,0);
+//		}
 	}
 	/** Adds ball if ball count on canvas is not max */
 	private void addBall(){
@@ -254,10 +302,18 @@ public class Breakout extends GraphicsProgram {
 			}
 		}
 	}
+
+	private void collideWithPaddle(Ball ball){
+		//TODO sound
+		ball.setDy(-Math.abs(ball.getDy()));
+	}
 	/** Removes brick and updates score */
 	private void breakBrick(GObject brick){
 		brickCount--;
 		remove(brick);
+		if(brikCount==0){
+			gameWin();
+		}
 		//TODO Check if brick count = 0
 	}
 	/** Returns true if GObject is brick */
