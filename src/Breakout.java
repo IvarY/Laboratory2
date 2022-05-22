@@ -266,6 +266,8 @@ public class Breakout extends GraphicsProgram {
 			if(ballCollection[i]==obj)
 				return false;
 		}
+		if(obj==paddle)
+			return false;
 		return true;
 	}
 }
