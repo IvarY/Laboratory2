@@ -31,6 +31,9 @@ public class ButtonManager {
                 //TODO Load level3
                 breakout.newGame();
                 break;
+            case 6:
+                System.exit(0);
+                break;
             default:
         }
     }

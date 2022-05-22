@@ -10,6 +10,7 @@
 import acm.graphics.*;
 import acm.program.*;
 import acm.util.RandomGenerator;
+import acm.util.SoundClip;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -71,14 +72,17 @@ public class Breakout extends GraphicsProgram {
 	private int maxBallCount=5;
 
 	private RandomGenerator randomGenerator;
-
+    /**counts bricks*/
 	private int brickCount;
-
 	private int currentBrickCount;
-
+    /**counts lives*/
 	private int livesLeft;
 
+	/**paddle*/
 	private GRect paddle;
+
+	/**all sounds in game*/
+	private SoundClip sound;
 
 /* Method: run() */
 /** Runs the Breakout program. */
@@ -117,15 +121,42 @@ public class Breakout extends GraphicsProgram {
 		//addBall();
 	}
 
+	/**Is called when you loose the game*/
 	private void gameOver() {
 		removeAll();
+		soundAndPictureForGameOver();
 		displayEndMenu();
 	}
 
+	/**Adds lose sound and picture*/
+	private void soundAndPictureForGameOver(){
+		sound = new SoundClip("/Users/matvejzasadko/Downloads/Laboratory/Sounds/GameLoose.wav");
+		sound.setVolume(1);
+		sound.play();
+		GImage image = new GImage("/Users/matvejzasadko/Downloads/Laboratory/GameOver.png");
+		image.scale(1.5, 2);
+		add(image, 50, 80);
+		pause(5000);
+		removeAll();
+	}
+
+	/**Is called when you win the game*/
 	private void gameWin(){
-		if(brickCount==0){
-			displayEndMenu();
-		}
+		removeAll();
+		soundAndPictureForGameWin();
+		displayEndMenu();
+
+	}
+
+	private void soundAndPictureForGameWin(){
+		sound = new SoundClip("/Users/matvejzasadko/Downloads/Laboratory/Sounds/game-won.wav");
+		sound.setVolume(1);
+		sound.play();
+		GImage image = new GImage("/Users/matvejzasadko/Downloads/Laboratory/WinPicture.jpeg");
+		image.scale(0.5, 0.5);
+		add(image, 50, 200);
+		pause(3000);
+		removeAll();
 	}
 
 	/**returns to menu to choose an another level*/
@@ -139,6 +170,7 @@ public class Breakout extends GraphicsProgram {
 		removeAll();
 		gameStart(level);
 	}
+
 
 
 	/**Main game cycle
@@ -157,9 +189,9 @@ public class Breakout extends GraphicsProgram {
 
 	/**Displays end menu after gane over*/
 	private void displayEndMenu(){
-		add(new GButton(WIDTH/2, HEIGHT/6, 4, "Play Again", buttonManager), WIDTH/4, HEIGHT/5);
-		add(new GButton(WIDTH/2, HEIGHT/6, 5, "Go to Menu", buttonManager), WIDTH/4, HEIGHT/2);
-		add(new GButton(WIDTH/2, HEIGHT/6, 6, "Exit", buttonManager), WIDTH/4, HEIGHT/);
+		add(new GButton(WIDTH/2, HEIGHT/6, 4, "Play Again", buttonManager), WIDTH/4, HEIGHT/8);
+		add(new GButton(WIDTH/2, HEIGHT/6, 5, "Go to Menu", buttonManager), WIDTH/4, HEIGHT/3);
+		add(new GButton(WIDTH/2, HEIGHT/6, 6, "Exit", buttonManager), WIDTH/4, HEIGHT/1.85);
 	}
 	/** Generates bricks and adds them to the canvas */
 	private void generateBricks(){
@@ -186,11 +218,12 @@ public class Breakout extends GraphicsProgram {
 		}
 	}
 
-
+	/**method where we decide where to move our paddle*/
 	public void mouseMoved(MouseEvent e){
 		movePaddle(e);
 	}
 
+	/**moves our paddle*/
 	private void movePaddle(MouseEvent e){
 		if(paddle!=null) {
 			if (e.getX() <= WIDTH - paddle.getWidth()/2 && e.getX()>=paddle.getWidth()/2)
@@ -198,6 +231,7 @@ public class Breakout extends GraphicsProgram {
 		}
 	}
 
+	/**adds our puddle*/
 	private void addPaddle(){
 		paddle = new GRect(PADDLE_WIDTH, PADDLE_HEIGHT);
 		paddle.setFilled(true);
@@ -262,20 +296,33 @@ public class Breakout extends GraphicsProgram {
 	private void moveBall(Ball ball){
 		ball.move(ball.getDx()*ball.getSpeed()*frameTimeCoefficient, ball.getDy()*ball.getSpeed()*frameTimeCoefficient);
 		if(ball.getX()>=WIDTH-ball.getWidth()){
+			sound = new SoundClip("/Users/matvejzasadko/Downloads/Laboratory/Sounds/Bounce.wav");
+			sound.setVolume(1);
+			sound.play();
 			ball.setDx(-Math.abs(ball.getDx()));
 			//ball.move(,0);
 		}
 		if(ball.getX()<=0){
+			sound = new SoundClip("/Users/matvejzasadko/Downloads/Laboratory/Sounds/Bounce.wav");
+			sound.setVolume(1);
+			sound.play();
 			ball.setDx(Math.abs(ball.getDx()));
 			//ball.move(,0);
 		}
 		if(ball.getY()<=0){
+			sound = new SoundClip("/Users/matvejzasadko/Downloads/Laboratory/Sounds/Bounce.wav");
+			sound.setVolume(1);
+			sound.play();
 			ball.setDy(Math.abs(ball.getDy()));
 			//ball.move(,0);
 		}
 
 		if(ball.getY()>=HEIGHT-ball.getHeight()) {
+			//TPDO Xpoint
 			remove(ball);
+			sound = new SoundClip("/Users/matvejzasadko/Downloads/Laboratory/Sounds/Mistake.wav");
+			sound.setVolume(1);
+			sound.play();
 			//TODO
 			livesLeft--;
 			if (livesLeft == 0){
@@ -305,13 +352,21 @@ public class Breakout extends GraphicsProgram {
 
 	private void collideWithPaddle(Ball ball){
 		//TODO sound
+		sound = new SoundClip("/Users/matvejzasadko/Downloads/Laboratory/Sounds/Bounce.wav");
+		sound.setVolume(1);
+		sound.play();
 		ball.setDy(-Math.abs(ball.getDy()));
 	}
 	/** Removes brick and updates score */
 	private void breakBrick(GObject brick){
 		brickCount--;
+
+		sound = new SoundClip("/Users/matvejzasadko/Downloads/Laboratory/Sounds/Bounce.wav");
+		sound.setVolume(1);
+		sound.play();
+
 		remove(brick);
-		if(brikCount==0){
+		if(brickCount==0){
 			gameWin();
 		}
 		//TODO Check if brick count = 0
@@ -326,4 +381,7 @@ public class Breakout extends GraphicsProgram {
 			return false;
 		return true;
 	}
+
+
+
 }
