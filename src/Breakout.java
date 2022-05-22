@@ -88,7 +88,7 @@ public class Breakout extends GraphicsProgram {
 	/**
 	 * Width and height of bonuses
 	 */
-	private double bonusWidth=10, bonusHeight=10;
+	private double bonusWidth=18, bonusHeight=18;
 
 	/**
 	 * Coefficient depending on which ball will deviate whet collide with different zones of paddle
@@ -328,11 +328,11 @@ public class Breakout extends GraphicsProgram {
 		bonus.setFillColor(color);
 		if(bonus1==null) {
 			bonus1 = bonus;
-			add(bonus1, x, y);
+			add(bonus1, x-bonus.getWidth()/2, y);
 		}
 		else if(bonus2==null) {
 			bonus2 = bonus;
-			add(bonus2, x, y);
+			add(bonus2, x-bonus.getWidth()/2, y);
 		}
 	}
 	/** Checks collisions for all balls */
